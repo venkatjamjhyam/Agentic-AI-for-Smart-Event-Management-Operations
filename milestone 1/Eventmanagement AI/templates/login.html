@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Login — EventOps AI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .login-wrapper {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        padding: 2rem 0;
+    }
+    .login-card {
+        border: 1px solid var(--eo-line);
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: blur(10px);
+        box-shadow: var(--eo-shadow);
+        transition: transform 0.3s ease;
+        overflow: hidden;
+    }
+    .login-card:hover {
+        transform: translateY(-5px);
+    }
+    .login-card .card-header {
+        background: linear-gradient(110deg, rgba(5, 18, 43, 0.96), rgba(15, 45, 90, 0.90));
+        color: white;
+        padding: 1.5rem 2rem;
+        border: none;
+        text-align: center;
+    }
+    .login-card .card-header h3 {
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+    .login-card .card-header i {
+        font-size: 2.5rem;
+        margin-bottom: 0.3rem;
+    }
+    .login-card .card-body {
+        padding: 2.5rem 2.5rem;
+    }
+    .form-floating {
+        margin-bottom: 1.5rem;
+    }
+    .form-floating > .form-control {
+        border-radius: 14px;
+        border: 1px solid var(--eo-line);
+        transition: all 0.2s ease;
+        background: #f8fafc;
+    }
+    .form-floating > .form-control:focus {
+        border-color: rgba(37, 99, 235, 0.55);
+        box-shadow: 0 0 0 0.22rem rgba(37, 99, 235, 0.12);
+        background: white;
+    }
+    .form-floating > label {
+        color: #6c757d;
+        font-weight: 500;
+    }
+    .password-toggle {
+        position: absolute;
+        right: 1.2rem;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #6c757d;
+        z-index: 10;
+        background: transparent;
+        border: none;
+        font-size: 1.2rem;
+        transition: color 0.2s;
+    }
+    .password-toggle:hover {
+        color: var(--eo-blue);
+    }
+    .btn-login {
+        padding: 0.8rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        background: linear-gradient(135deg, var(--eo-blue), var(--eo-indigo));
+        border: none;
+        color: white;
+        transition: all 0.3s ease;
+        width: 100%;
+        font-size: 1.1rem;
+    }
+    .btn-login:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(13, 110, 253, 0.3);
+        background: linear-gradient(135deg, #1d4ed8, #1e3a8a);
+        color: white;
+    }
+    .register-link {
+        text-align: center;
+        margin-top: 1rem;
+    }
+    .register-link a {
+        font-weight: 600;
+        color: var(--eo-blue);
+        text-decoration: none;
+    }
+    .register-link a:hover {
+        text-decoration: underline;
+    }
+    .demo-hint {
+        background: #f8fafc;
+        border-radius: 14px;
+        padding: 1rem;
+        margin-top: 1.5rem;
+        font-size: 0.9rem;
+        color: #495057;
+        border-left: 4px solid var(--eo-blue);
+    }
+    .demo-hint strong {
+        color: var(--eo-blue);
+    }
+    .demo-hint code {
+        background: #e9ecef;
+        padding: 0.1rem 0.5rem;
+        border-radius: 0.3rem;
+        font-size: 0.85rem;
+        color: #0d6efd;
+    }
+    @media (max-width: 576px) {
+        .login-card .card-body {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-wrapper">
+    <div class="col-md-8 col-lg-6 col-xl-4">
+        <div class="card login-card">
+            <div class="card-header">
+                <i class="bi bi-box-arrow-in-right"></i>
+                <h3>Welcome Back</h3>
+                <p class="mb-0" style="opacity:0.85;">Sign in to your EventOps AI account</p>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('login') }}" id="loginForm" novalidate>
+                    <div class="form-floating">
+                        <input type="email" class="form-control" id="email" name="email"
+                               placeholder="Email Address" required autofocus>
+                        <label for="email"><i class="bi bi-envelope-fill me-2"></i>Email Address</label>
+                        <div class="invalid-feedback">Please enter a valid email.</div>
+                    </div>
+                    <div class="form-floating position-relative">
+                        <input type="password" class="form-control" id="password" name="password"
+                               placeholder="Password" required>
+                        <label for="password"><i class="bi bi-lock-fill me-2"></i>Password</label>
+                        <button type="button" class="password-toggle" id="togglePassword" aria-label="Toggle password visibility">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <div class="invalid-feedback">Please enter your password.</div>
+                    </div>
+                    <button type="submit" class="btn btn-login">
+                        <i class="bi bi-box-arrow-in-right me-2"></i> Login
+                    </button>
+                </form>
+                <div class="register-link">
+                    <p class="text-muted">Don't have an account? <a href="{{ url_for('register') }}">Register here</a></p>
+                </div>
+                <div class="demo-hint">
+                    <i class="bi bi-info-circle-fill me-2 text-primary"></i>
+                    <strong>Demo credentials:</strong><br>
+                    Admin: <code>admin@eventops.com</code> / <code>admin123</code><br>
+                    User:  <code>user@eventops.com</code> / <code>user123</code>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function() {
+        const toggleBtn = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+        toggleBtn.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            const icon = this.querySelector('i');
+            icon.classList.toggle('bi-eye');
+            icon.classList.toggle('bi-eye-slash');
+        });
+        const form = document.getElementById('loginForm');
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    })();
+</script>
+{% endblock %}

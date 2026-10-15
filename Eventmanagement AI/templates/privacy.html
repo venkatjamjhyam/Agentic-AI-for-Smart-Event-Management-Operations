@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy — EventOps AI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .privacy-page { max-width: 960px; margin: 0 auto; }
+    .privacy-hero { padding: clamp(28px, 5vw, 52px); margin-bottom: 24px; color: #fff; }
+    .privacy-hero h1 { margin: 10px 0; font-weight: 800; font-size: clamp(2rem, 5vw, 3.2rem); }
+    .privacy-hero p { max-width: 700px; margin: 0; color: rgba(255,255,255,.82); line-height: 1.7; }
+    .privacy-card { padding: clamp(22px, 4vw, 38px); border: 1px solid var(--eo-line); border-radius: 18px; background: rgba(255,255,255,.96); box-shadow: var(--eo-soft-shadow); }
+    .privacy-card section + section { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--eo-line); }
+    .privacy-card h2 { margin-bottom: 10px; color: var(--eo-ink); font-size: 1.22rem; font-weight: 800; }
+    .privacy-card p, .privacy-card li { color: var(--eo-muted); line-height: 1.75; }
+    .privacy-card ul { padding-left: 1.25rem; }
+    .privacy-note { padding: 16px 18px; border-left: 4px solid var(--eo-teal); border-radius: 10px; background: #f0fdfa; color: var(--eo-ink); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="privacy-page">
+    <header class="privacy-hero eo-gradient-panel">
+        <span class="small text-uppercase fw-bold"><i class="bi bi-shield-check me-2"></i>Your information</span>
+        <h1>Privacy Policy</h1>
+        <p>This page explains what information EventOps AI handles when you use the event management application and how to contact us with a privacy question.</p>
+    </header>
+
+    <article class="privacy-card">
+        <p><strong>Effective date:</strong> October 15, 2026</p>
+        <div class="privacy-note"><strong>Operator details to complete:</strong> Replace “EventOps AI” with the legal name of the operator and provide a working privacy contact email before publishing this policy.</div>
+
+        <section>
+            <h2>1. Information this application handles</h2>
+            <p>Based on the current application code, EventOps AI handles information you enter or generate while using its features:</p>
+            <ul>
+                <li><strong>Account information:</strong> name, email address, and a password hash created when an account is registered. The application checks the hash during login; it does not store the password as plain text.</li>
+                <li><strong>Event activity:</strong> event registrations, ticket type, check-in status, reminders, and feedback (rating and any comment), associated with your account where applicable.</li>
+                <li><strong>Assistant messages:</strong> text you submit to the AI assistant may be sent to Google Gemini to generate a response. Do not include sensitive personal information in assistant prompts.</li>
+                <li><strong>Contact form:</strong> the form asks for your name, email, subject, and message. In the current code, the submission is not saved or emailed; the app displays a confirmation and discards the submitted values after the request.</li>
+            </ul>
+            <p>The application also creates timestamps for certain account, event, reminder, notification, and feedback records. Administrators may enter event and operations information into the system.</p>
+        </section>
+
+        <section>
+            <h2>2. How information is used</h2>
+            <p>The application uses account information to authenticate users and associate them with their registrations, reminders, and feedback. It uses event and operations records to provide dashboards and event management features. Assistant message text is sent to Gemini for response generation. The application code includes no payment processing feature.</p>
+        </section>
+
+        <section>
+            <h2>3. Storage and retention</h2>
+            <p>Application records are stored in the database configured by the operator. The default configuration uses a local SQLite database; a deployment may instead use the database specified by its environment configuration. The code does not define a data retention or account deletion schedule. The operator must set and publish those practices for the live service.</p>
+        </section>
+
+        <section>
+            <h2>4. Cookies and similar technologies</h2>
+            <p>The application uses Flask-Login for sign-in state, which relies on a browser session cookie. The application code does not define an analytics or advertising cookie system. The operator should confirm the production session-cookie settings and whether hosting infrastructure or added services use other cookies.</p>
+        </section>
+
+        <section>
+            <h2>5. Service providers and external resources</h2>
+            <p>Assistant prompts are sent to Google Gemini through the configured API integration. The shared page layout loads Bootstrap, Bootstrap Icons, and Chart.js from public content delivery networks; some pages also reference images hosted by Unsplash. Those providers may receive standard connection information from your browser when those resources load. Review the providers' terms and privacy information and confirm the exact services enabled in your deployment.</p>
+        </section>
+
+        <section>
+            <h2>6. Security</h2>
+            <p>Passwords are hashed by the application before they are stored. No website can guarantee absolute security; the operator should configure secure production hosting, protect database and API credentials, and enable appropriate transport security and session settings.</p>
+        </section>
+
+        <section>
+            <h2>7. Your choices and questions</h2>
+            <p>To ask about, correct, or request deletion of information associated with your account, contact the service operator using the privacy contact details published here. Add the operator's contact email, applicable response process, and any legal rights that apply where the service is offered before publication.</p>
+        </section>
+
+        <section>
+            <h2>8. Changes to this policy</h2>
+            <p>The operator may update this policy as the application or its data practices change. The effective date at the top of this page should be updated whenever the policy is revised.</p>
+        </section>
+    </article>
+</div>
+{% endblock %}

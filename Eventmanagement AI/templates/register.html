@@ -1,0 +1,487 @@
+{% extends "base.html" %}
+
+{% block title %}Register - EventOps AI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-shell {
+        display: grid;
+        grid-template-columns: minmax(280px, 0.85fr) minmax(320px, 1.15fr);
+        gap: 24px;
+        align-items: stretch;
+        min-height: calc(100vh - 170px);
+    }
+
+    .auth-story {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        overflow: hidden;
+        padding: clamp(26px, 4vw, 44px);
+        color: #fff;
+    }
+
+    .auth-story h1 {
+        margin: 18px 0 14px;
+        font-size: clamp(2.1rem, 5vw, 4rem);
+        line-height: 1;
+        font-weight: 600;
+    }
+
+    .auth-story p {
+        max-width: 560px;
+        color: rgba(255, 255, 255, 0.82);
+        line-height: 1.75;
+    }
+
+    .auth-kicker {
+        display: inline-flex;
+        width: fit-content;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 13px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        color: rgba(255, 255, 255, 0.92);
+        font-size: 0.84rem;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .auth-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 28px;
+    }
+
+    .auth-stat {
+        padding: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(10px);
+    }
+
+    .auth-stat strong {
+        display: block;
+        font-size: 1.35rem;
+    }
+
+    .auth-stat span {
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 0.84rem;
+    }
+
+    .auth-card {
+        border: 1px solid var(--eo-line);
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.94);
+        box-shadow: var(--eo-shadow);
+        overflow: hidden;
+    }
+
+    .auth-card-head {
+        padding: 26px 30px 18px;
+        border-bottom: 1px solid var(--eo-line);
+        background:
+            radial-gradient(circle at top right, rgba(20, 184, 166, 0.12), transparent 16rem),
+            rgba(255, 255, 255, 0.78);
+    }
+
+    .auth-card-head h2 {
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .auth-card-head p {
+        margin: 8px 0 0;
+        color: var(--eo-muted);
+    }
+
+    .auth-card-body {
+        padding: 30px;
+    }
+
+    .form-floating {
+        margin-bottom: 1.15rem;
+    }
+
+    .form-floating > .form-control,
+    .form-floating > .form-select {
+        min-height: 58px;
+        border: 1px solid var(--eo-line);
+        border-radius: 14px;
+        background: #f8fafc;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .form-floating > .form-control:focus,
+    .form-floating > .form-select:focus {
+        border-color: rgba(37, 99, 235, 0.55);
+        background: #fff;
+        box-shadow: 0 0 0 0.22rem rgba(37, 99, 235, 0.12);
+    }
+
+    .form-floating > label {
+        color: var(--eo-muted);
+        font-weight: 650;
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 16px;
+        top: 29px;
+        z-index: 10;
+        border: 0;
+        background: transparent;
+        color: var(--eo-muted);
+        cursor: pointer;
+        font-size: 1.15rem;
+    }
+
+    .password-toggle:hover {
+        color: var(--eo-blue);
+    }
+
+    .password-strength {
+        height: 7px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #e5eaf2;
+    }
+
+    .password-strength .progress-bar {
+        width: 0;
+        height: 100%;
+        border-radius: inherit;
+        transition: width 0.25s ease, background 0.25s ease;
+    }
+
+    .role-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .role-option {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        min-height: 120px;
+        padding: 16px;
+        border: 1px solid var(--eo-line);
+        border-radius: 16px;
+        background: #f8fafc;
+        cursor: pointer;
+        transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .role-option:hover,
+    .role-option.active {
+        border-color: rgba(37, 99, 235, 0.38);
+        background: #fff;
+        box-shadow: var(--eo-soft-shadow);
+        transform: translateY(-2px);
+    }
+
+    .role-option input[type="radio"] {
+        display: none;
+    }
+
+    .role-icon {
+        display: inline-flex;
+        flex: 0 0 auto;
+        width: 42px;
+        height: 42px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        color: #fff;
+        background: linear-gradient(135deg, var(--eo-blue), var(--eo-indigo));
+        font-size: 1.2rem;
+    }
+
+    .role-title {
+        font-weight: 800;
+    }
+
+    .role-desc {
+        margin-top: 4px;
+        color: var(--eo-muted);
+        font-size: 0.86rem;
+        line-height: 1.45;
+    }
+
+    .btn-register {
+        width: 100%;
+        min-height: 50px;
+        color: #fff;
+        background: linear-gradient(135deg, var(--eo-blue), var(--eo-indigo));
+        border: 0;
+    }
+
+    .btn-register:hover {
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 16px 30px rgba(37, 99, 235, 0.24) !important;
+    }
+
+    .demo-hint {
+        margin-top: 18px;
+        padding: 16px;
+        border: 1px solid rgba(20, 184, 166, 0.22);
+        border-radius: 14px;
+        background: rgba(20, 184, 166, 0.08);
+        color: #31515d;
+        font-size: 0.92rem;
+    }
+
+    .demo-hint code {
+        color: var(--eo-ink);
+        background: rgba(255, 255, 255, 0.74);
+        border-radius: 6px;
+        padding: 2px 5px;
+    }
+
+    .confirm-feedback {
+        display: none;
+        width: 100%;
+        margin-top: 0.25rem;
+        color: #dc3545;
+        font-size: 0.875em;
+    }
+
+    .confirm-feedback.show {
+        display: block;
+    }
+
+    @media (max-width: 992px) {
+        .auth-shell {
+            grid-template-columns: 1fr;
+        }
+
+        .auth-story {
+            min-height: 360px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .auth-card-body,
+        .auth-card-head,
+        .auth-story {
+            padding: 22px;
+        }
+
+        .auth-stats,
+        .role-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-shell">
+    <section class="auth-story eo-gradient-panel">
+        <div>
+            <span class="auth-kicker"><i class="bi bi-stars"></i> Event operations workspace</span>
+            <h1>Create your EventOps AI account.</h1>
+            <p>
+                Join a role-based platform for registrations, venue operations, speaker schedules,
+                sponsorship tracking, incident response, and real-time event intelligence.
+            </p>
+        </div>
+        <div class="auth-stats" aria-label="Platform highlights">
+            <div class="auth-stat">
+                <strong>5</strong>
+                <span>AI agents</span>
+            </div>
+            <div class="auth-stat">
+                <strong>24/7</strong>
+                <span>monitoring</span>
+            </div>
+            <div class="auth-stat">
+                <strong>Live</strong>
+                <span>dashboards</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="auth-card">
+        <div class="auth-card-head">
+            <h2><i class="bi bi-person-plus text-primary me-2"></i>Create Your Account</h2>
+            <p>Choose your role and start managing smarter event workflows.</p>
+        </div>
+        <div class="auth-card-body">
+            <form method="POST" action="{{ url_for('register') }}" id="registerForm" novalidate>
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="name" name="name" placeholder="Full Name" required>
+                    <label for="name"><i class="bi bi-person-fill me-2"></i>Full Name</label>
+                    <div class="invalid-feedback">Please enter your full name.</div>
+                </div>
+
+                <div class="form-floating">
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Email Address" required>
+                    <label for="email"><i class="bi bi-envelope-fill me-2"></i>Email Address</label>
+                    <div class="invalid-feedback">Please enter a valid email.</div>
+                </div>
+
+                <div class="form-floating">
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Password" required minlength="8">
+                    <label for="password"><i class="bi bi-lock-fill me-2"></i>Password</label>
+                    <i class="bi bi-eye-slash password-toggle" id="togglePassword"></i>
+                    <div class="invalid-feedback">Password must be at least 8 characters.</div>
+                    <div class="password-strength mt-2">
+                        <div class="progress-bar" id="passwordStrengthBar" role="progressbar"></div>
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted mt-1">
+                        <span>Weak</span>
+                        <span>Medium</span>
+                        <span>Strong</span>
+                    </div>
+                    <div id="passwordHelp" class="form-text">
+                        <i class="bi bi-info-circle"></i> Use at least 8 characters with letters, numbers, and symbols.
+                    </div>
+                </div>
+
+                <div class="form-floating">
+                    <input type="password" class="form-control" id="confirmPassword" name="confirm_password" placeholder="Confirm Password" required>
+                    <label for="confirmPassword"><i class="bi bi-check-circle me-2"></i>Confirm Password</label>
+                    <i class="bi bi-eye-slash password-toggle" id="toggleConfirmPassword"></i>
+                    <div class="invalid-feedback">Please confirm your password.</div>
+                    <div class="confirm-feedback" id="confirmFeedback">Passwords do not match.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold"><i class="bi bi-person-badge me-2"></i>Select Role</label>
+                    <div class="role-grid">
+                        <label class="role-option active" data-role="user">
+                            <input type="radio" name="role" value="user" checked>
+                            <span class="role-icon"><i class="bi bi-person"></i></span>
+                            <span>
+                                <span class="role-title d-block">User</span>
+                                <span class="role-desc d-block">Browse events, register, and track participation.</span>
+                            </span>
+                        </label>
+                        <label class="role-option" data-role="admin">
+                            <input type="radio" name="role" value="admin">
+                            <span class="role-icon"><i class="bi bi-shield-lock"></i></span>
+                            <span>
+                                <span class="role-title d-block">Admin</span>
+                                <span class="role-desc d-block">Manage events, venues, sponsors, users, and more.</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-register">
+                    <i class="bi bi-check-circle me-2"></i>Register Now
+                </button>
+            </form>
+
+            <div class="text-center mt-3">
+                <p class="text-muted mb-0">Already have an account? <a href="{{ url_for('login') }}" class="fw-bold text-primary">Login</a></p>
+            </div>
+
+            <div class="demo-hint">
+                <i class="bi bi-info-circle-fill me-2 text-primary"></i>
+                <strong>Demo credentials:</strong><br>
+                Admin: <code>admin@eventops.com</code> / <code>admin123</code><br>
+                User: <code>user@eventops.com</code> / <code>user123</code>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function() {
+        'use strict';
+
+        const roleOptions = document.querySelectorAll('.role-option');
+        roleOptions.forEach(opt => {
+            opt.addEventListener('click', function() {
+                roleOptions.forEach(o => o.classList.remove('active'));
+                this.classList.add('active');
+                const radio = this.querySelector('input[type="radio"]');
+                if (radio) radio.checked = true;
+            });
+        });
+
+        const togglePassword = document.getElementById('togglePassword');
+        const password = document.getElementById('password');
+        togglePassword.addEventListener('click', function() {
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            this.classList.toggle('bi-eye');
+            this.classList.toggle('bi-eye-slash');
+        });
+
+        const toggleConfirm = document.getElementById('toggleConfirmPassword');
+        const confirm = document.getElementById('confirmPassword');
+        toggleConfirm.addEventListener('click', function() {
+            const type = confirm.getAttribute('type') === 'password' ? 'text' : 'password';
+            confirm.setAttribute('type', type);
+            this.classList.toggle('bi-eye');
+            this.classList.toggle('bi-eye-slash');
+        });
+
+        const passwordInput = document.getElementById('password');
+        const strengthBar = document.getElementById('passwordStrengthBar');
+        const confirmInput = document.getElementById('confirmPassword');
+        const confirmFeedback = document.getElementById('confirmFeedback');
+
+        function checkPasswordMatch() {
+            const pass = passwordInput.value;
+            const confirmVal = confirmInput.value;
+            if (confirmVal === '') {
+                confirmFeedback.classList.remove('show');
+                confirmInput.setCustomValidity('');
+                return;
+            }
+            if (pass !== confirmVal) {
+                confirmFeedback.classList.add('show');
+                confirmInput.setCustomValidity('Passwords do not match.');
+            } else {
+                confirmFeedback.classList.remove('show');
+                confirmInput.setCustomValidity('');
+            }
+        }
+
+        passwordInput.addEventListener('input', function() {
+            const val = this.value;
+            let strength = 0;
+            if (val.length >= 8) strength += 1;
+            if (/[a-z]/.test(val) && /[A-Z]/.test(val)) strength += 1;
+            if (/\d/.test(val)) strength += 1;
+            if (/[^a-zA-Z0-9]/.test(val)) strength += 1;
+
+            let width = 0;
+            let color = '#dc3545';
+            if (strength >= 4) { width = 100; color = '#16a34a'; }
+            else if (strength === 3) { width = 75; color = '#f59e0b'; }
+            else if (strength === 2) { width = 50; color = '#f97316'; }
+            else if (strength >= 1) { width = 25; color = '#dc3545'; }
+
+            strengthBar.style.width = width + '%';
+            strengthBar.style.background = color;
+            checkPasswordMatch();
+        });
+
+        confirmInput.addEventListener('input', checkPasswordMatch);
+
+        const form = document.getElementById('registerForm');
+        form.addEventListener('submit', function(event) {
+            checkPasswordMatch();
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    })();
+</script>
+{% endblock %}

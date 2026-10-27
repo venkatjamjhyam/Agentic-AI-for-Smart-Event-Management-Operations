@@ -1,0 +1,6 @@
+APScheduler
+Flask
+Flask-Login
+Flask-SQLAlchemy
+google-genai
+python-dotenv

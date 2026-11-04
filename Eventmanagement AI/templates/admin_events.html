@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}Admin — Manage Events{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header { background: linear-gradient(110deg, #19152E, #5541A8 72%, #B7A5FF); border-radius: 18px; box-shadow: 0 20px 45px rgba(7,19,38,.18); }
+    .search-card { background: rgba(255,255,255,.94); border: 1px solid #e5eaf2; box-shadow: 0 14px 36px rgba(15,23,42,.08); }
+    .table-card { border: 1px solid #e5eaf2; }
+    .table thead th { color: #475569; font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; }
+    .btn-action { border-radius: 999px; }
+    .page-header {
+        background: linear-gradient(135deg, #5541A8 0%, #B7A5FF 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+        border-radius: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(102,126,234,0.3);
+    }
+    .page-header h2 {
+        font-weight: 700;
+        margin-bottom: 0.3rem;
+    }
+    .page-header p {
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+    .search-card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+        padding: 1.5rem;
+        background: #f8f9fa;
+        margin-bottom: 1.5rem;
+    }
+    .table-card {
+        border: none;
+        border-radius: 1.5rem;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+        overflow: hidden;
+    }
+    .table-card .card-header {
+        background: transparent;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding: 1rem 1.5rem;
+        font-weight: 600;
+    }
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        color: #4a5568;
+    }
+    .table td {
+        vertical-align: middle;
+    }
+    .status-badge {
+        padding: 0.3rem 1rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .status-upcoming { background: #dbeafe; color: #5541A8; }
+    .status-ongoing { background: #d1fae5; color: #065f46; }
+    .status-completed { background: #e5e7eb; color: #374151; }
+    .status-cancelled { background: #fee2e2; color: #991b1b; }
+    .btn-action {
+        border-radius: 50px;
+        padding: 0.25rem 0.8rem;
+        font-size: 0.8rem;
+        transition: all 0.2s ease;
+    }
+    .btn-action:hover { transform: translateY(-2px); }
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+    }
+    .empty-state i {
+        font-size: 4rem;
+        color: #cbd5e0;
+        margin-bottom: 1rem;
+    }
+    .empty-state h5 { color: #4a5568; }
+    .empty-state p { color: #a0aec0; }
+    .page-header { padding: clamp(1.35rem, 3vw, 2.25rem); border-radius: 18px; margin-bottom: 1.25rem; background: linear-gradient(115deg, #19152E 0%, #5541A8 68%, #B7A5FF 130%); box-shadow: 0 18px 42px rgba(7,19,38,.16); }
+    .page-header h2 { color: #fff; font-size: clamp(1.35rem, 3vw, 1.9rem); letter-spacing: -.03em; }
+    .page-header p { color: rgba(255,255,255,.75); }
+    .page-header .btn-light { border: 0; color: #102a50; font-weight: 750; }
+    .search-card { padding: 1.2rem; border: 1px solid #e5eaf2; border-radius: 16px; background: #fff; box-shadow: 0 10px 28px rgba(15,23,42,.055); }
+    .search-card .form-label { color: #34445c; font-size: .82rem; }
+    .search-card .form-control, .search-card .form-select { min-height: 44px; border-color: #dce4ef; border-radius: 10px; background-color: #fbfcfe; }
+    .table-card { border: 1px solid #e5eaf2; border-radius: 16px !important; box-shadow: 0 14px 36px rgba(15,23,42,.07); }
+    .table-card .card-header { padding: 1rem 1.25rem; }
+    .table { --bs-table-hover-bg: #f5f8fc; }
+    .table thead th { padding: .85rem .9rem; color: #68778c; font-size: .7rem; letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; }
+    .table tbody td { padding: .9rem; border-color: #edf1f6; }
+    .status-badge { display: inline-flex; align-items: center; white-space: nowrap; padding: .38rem .72rem; }
+    .btn-action { padding: .34rem .7rem; font-size: .76rem; }
+    .btn-action:hover { transform: translateY(-1px); }
+    @media (max-width: 767.98px) { .page-header > div { align-items: flex-start !important; flex-direction: column; gap: 1rem; } .page-header .btn { width: 100%; } .search-card form > div { width: 100%; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- ====== PAGE HEADER ====== -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h2><i class="bi bi-calendar-event me-2"></i>Admin Event Management</h2>
+            <p>Manage all events in the system. Create, edit, or delete events.</p>
+        </div>
+        <a href="{{ url_for('admin_event_add') }}" class="btn btn-light btn-lg">
+            <i class="bi bi-plus-circle"></i> Add New Event
+        </a>
+    </div>
+</div>
+
+<!-- ====== SEARCH & FILTER ====== -->
+<div class="search-card">
+    <form method="GET" class="row g-3 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label fw-semibold"><i class="bi bi-search"></i> Search</label>
+            <input type="text" name="search" class="form-control" placeholder="Title or location..."
+                   value="{{ request.args.get('search', '') }}">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label fw-semibold"><i class="bi bi-calendar-date"></i> Date From</label>
+            <input type="date" name="date_from" class="form-control" value="{{ request.args.get('date_from', '') }}">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label fw-semibold"><i class="bi bi-calendar-check"></i> Date To</label>
+            <input type="date" name="date_to" class="form-control" value="{{ request.args.get('date_to', '') }}">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label fw-semibold"><i class="bi bi-filter"></i> Status</label>
+            <select name="status" class="form-select">
+                <option value="">All Status</option>
+                <option value="upcoming" {% if request.args.get('status') == 'upcoming' %}selected{% endif %}>Upcoming</option>
+                <option value="ongoing" {% if request.args.get('status') == 'ongoing' %}selected{% endif %}>Ongoing</option>
+                <option value="completed" {% if request.args.get('status') == 'completed' %}selected{% endif %}>Completed</option>
+                <option value="cancelled" {% if request.args.get('status') == 'cancelled' %}selected{% endif %}>Cancelled</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary flex-grow-1"><i class="bi bi-funnel"></i> Filter</button>
+            <a href="{{ url_for('admin_events') }}" class="btn btn-outline-secondary" title="Clear filters" aria-label="Clear filters"><i class="bi bi-arrow-counterclockwise"></i></a>
+        </div>
+    </form>
+</div>
+
+<!-- ====== EVENTS TABLE ====== -->
+<div class="card table-card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-table text-primary me-2"></i>All Events ({{ events|length }})</span>
+        {% if events %}
+        <span class="badge bg-primary rounded-pill">{{ events|length }}</span>
+        {% endif %}
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Title</th>
+                        <th>Date & Time</th>
+                        <th>Location</th>
+                        <th>Capacity</th>
+                        <th>Status</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in events %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td><strong>{{ event.title }}</strong>
+                            {% if event.description %}
+                            <br><small class="text-muted">{{ event.description[:50] }}{% if event.description|length > 50 %}…{% endif %}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ event.date }}<br>
+                            <small class="text-muted"><i class="bi bi-clock"></i> {{ event.time }}</small>
+                        </td>
+                        <td><i class="bi bi-geo-alt text-secondary"></i> {{ event.location or '—' }}</td>
+                        <td>{{ event.capacity }}</td>
+                        <td>
+                            <span class="status-badge status-{{ event.status }}">
+                                <i class="bi bi-circle-fill me-1" style="font-size:0.5rem;"></i>
+                                {{ event.status|capitalize }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <a href="{{ url_for('admin_event_edit', event_id=event.id) }}" class="btn btn-outline-primary btn-action">
+                                <i class="bi bi-pencil"></i> Edit
+                            </a>
+                            <form method="POST" action="{{ url_for('admin_event_delete', event_id=event.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this event?')">
+                                <button type="submit" class="btn btn-outline-danger btn-action"><i class="bi bi-trash"></i> Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <i class="bi bi-calendar2-x"></i>
+                                <h5>No events found</h5>
+                                <p>Try adjusting your search filters or <a href="{{ url_for('admin_event_add') }}">create a new event</a>.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ====== QUICK ACTION FOOTER ====== -->
+<div class="mt-4 d-flex gap-3">
+    <!-- FIXED: use 'dashboard' instead of 'admin_dashboard' -->
+    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+    {% if events %}
+    <a href="{{ url_for('admin_events_export', **request.args) }}" class="btn btn-outline-success">
+        <i class="bi bi-file-earmark-spreadsheet"></i> Export CSV
+    </a>
+    {% endif %}
+</div>
+{% endblock %}

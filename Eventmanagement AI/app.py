@@ -3,11 +3,13 @@ import json
 import re
 import atexit
 from datetime import datetime, timedelta, timezone
-from flask import Flask, render_template, redirect, url_for, flash, request, abort, jsonify
+from flask import Flask, render_template, redirect, url_for, flash, request, abort, jsonify, Response
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 import random
+import csv
+from io import StringIO
 from google import genai
 from google.genai import types
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -150,7 +152,8 @@ class GeminiAssistant:
         if not api_key:
             raise ValueError("GEMINI_API_KEY not set. Please set it in your environment.")
         self.client = genai.Client(api_key=api_key)
-        self.model = "gemini-3.6-flash"
+        self.model = "gemini-3.8-flash"
+        self.fallback_model = "gemini-3.5-flash-lite"
         self.system_instruction = """
         You are EventOps AI, an intelligent assistant for event management.
         You can help users with event information, registrations, venues, speakers, and reminders.
@@ -290,7 +293,22 @@ class GeminiAssistant:
                 )
             )
         except Exception as e:
-            return f"❌ Gemini error: {str(e)}"
+            status_code = getattr(e, 'code', None)
+            is_unavailable = status_code == 503 or '503' in str(e) or 'UNAVAILABLE' in str(e).upper()
+            if not is_unavailable:
+                return "The AI assistant could not complete that request. Please try again."
+
+            try:
+                response = self.client.models.generate_content(
+                    model=self.fallback_model,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        system_instruction=self.system_instruction,
+                        temperature=0.2,
+                    )
+                )
+            except Exception:
+                return "The AI service is busy right now. Please try again in a little while."
 
         raw = response.text.strip()
         raw = re.sub(r'^```json\s*|```$', '', raw, flags=re.MULTILINE).strip()
@@ -683,8 +701,46 @@ def assistant_api():
 def admin_events():
     if current_user.role != 'admin':
         abort(403)
-    events = Event.query.all()
+    query = Event.query
+    search = request.args.get('search', '').strip()
+    status = request.args.get('status', '').strip().lower()
+    date_from = request.args.get('date_from', '').strip()
+    date_to = request.args.get('date_to', '').strip()
+    if search:
+        query = query.filter(db.or_(Event.title.ilike(f'%{search}%'), Event.location.ilike(f'%{search}%')))
+    if status in {'upcoming', 'ongoing', 'completed', 'cancelled'}:
+        query = query.filter(db.func.lower(Event.status) == status)
+    if date_from:
+        query = query.filter(Event.date >= date_from)
+    if date_to:
+        query = query.filter(Event.date <= date_to)
+    events = query.order_by(Event.date.asc(), Event.time.asc()).all()
     return render_template('admin_events.html', events=events)
+
+@app.route('/admin/events/export')
+@login_required
+def admin_events_export():
+    if current_user.role != 'admin':
+        abort(403)
+    output = StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['ID', 'Title', 'Date', 'Time', 'Location', 'Capacity', 'Status', 'Description'])
+    query = Event.query
+    search = request.args.get('search', '').strip()
+    status = request.args.get('status', '').strip().lower()
+    date_from = request.args.get('date_from', '').strip()
+    date_to = request.args.get('date_to', '').strip()
+    if search:
+        query = query.filter(db.or_(Event.title.ilike(f'%{search}%'), Event.location.ilike(f'%{search}%')))
+    if status in {'upcoming', 'ongoing', 'completed', 'cancelled'}:
+        query = query.filter(db.func.lower(Event.status) == status)
+    if date_from:
+        query = query.filter(Event.date >= date_from)
+    if date_to:
+        query = query.filter(Event.date <= date_to)
+    for event in query.order_by(Event.date.asc(), Event.time.asc()).all():
+        writer.writerow([event.id, event.title, event.date, event.time, event.location, event.capacity, event.status, event.description])
+    return Response('\ufeff' + output.getvalue(), mimetype='text/csv', headers={'Content-Disposition': 'attachment; filename=events.csv'})
 
 @app.route('/admin/events/add', methods=['GET', 'POST'])
 @login_required
@@ -728,7 +784,7 @@ def admin_event_edit(event_id):
         return redirect(url_for('admin_events'))
     return render_template('admin_event_form.html', event=event)
 
-@app.route('/admin/events/delete/<int:event_id>')
+@app.route('/admin/events/delete/<int:event_id>', methods=['POST'])
 @login_required
 def admin_event_delete(event_id):
     if current_user.role != 'admin':

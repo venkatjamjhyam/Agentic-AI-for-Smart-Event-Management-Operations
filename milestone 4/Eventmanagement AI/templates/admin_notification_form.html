@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}Send Notification — Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-wrapper {
+        background: linear-gradient(145deg, #f0f4ff 0%, #e6edf7 100%);
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 0;
+        border-radius: 2rem;
+    }
+    .form-card {
+        border: none;
+        border-radius: 2rem;
+        background: rgba(255,255,255,0.85);
+        backdrop-filter: blur(4px);
+        box-shadow: 0 20px 60px rgba(13, 110, 253, 0.12);
+        overflow: hidden;
+        transition: transform 0.3s;
+    }
+    .form-card:hover {
+        transform: translateY(-5px);
+    }
+    .form-card .card-header {
+        background: linear-gradient(135deg, #0d6efd, #6610f2);
+        color: white;
+        padding: 1.5rem 2rem;
+        border: none;
+        text-align: center;
+    }
+    .form-card .card-header h3 {
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+    .form-card .card-header i {
+        font-size: 2.5rem;
+        margin-bottom: 0.3rem;
+    }
+    .form-card .card-body {
+        padding: 2.5rem 2.5rem;
+    }
+
+    .form-floating {
+        margin-bottom: 1.5rem;
+    }
+    .form-floating > .form-control,
+    .form-floating > .form-select,
+    .form-floating > textarea {
+        border-radius: 1rem;
+        border: 2px solid #e9ecef;
+        transition: all 0.2s ease;
+        background: #f8f9fa;
+        min-height: 60px;
+    }
+    .form-floating > .form-control:focus,
+    .form-floating > .form-select:focus,
+    .form-floating > textarea:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13,110,253,0.15);
+        background: white;
+    }
+    .form-floating > label {
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    .btn-send {
+        padding: 0.8rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        background: linear-gradient(135deg, #0d6efd, #6610f2);
+        border: none;
+        color: white;
+        transition: all 0.3s ease;
+        width: 100%;
+        font-size: 1.1rem;
+    }
+    .btn-send:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(13,110,253,0.3);
+        background: linear-gradient(135deg, #0b5ed7, #5a0fc7);
+        color: white;
+    }
+
+    .channel-options {
+        display: flex;
+        gap: 0.8rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+    .channel-options .channel-btn {
+        flex: 1;
+        padding: 0.6rem;
+        border-radius: 50px;
+        border: 2px solid #e9ecef;
+        background: white;
+        transition: all 0.2s;
+        text-align: center;
+        cursor: pointer;
+        font-weight: 500;
+    }
+    .channel-options .channel-btn input[type="radio"] {
+        display: none;
+    }
+    .channel-options .channel-btn.active-email {
+        border-color: #0d6efd;
+        background: #cfe2ff;
+        color: #0d6efd;
+    }
+    .channel-options .channel-btn.active-sms {
+        border-color: #198754;
+        background: #d1e7dd;
+        color: #198754;
+    }
+    .channel-options .channel-btn.active-push {
+        border-color: #ffc107;
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    @media (max-width: 576px) {
+        .form-card .card-body {
+            padding: 1.5rem;
+        }
+        .channel-options .channel-btn {
+            font-size: 0.9rem;
+        }
+    }
+</style>
+<style>
+    .admin-wrapper, .form-wrapper { padding: clamp(1rem, 3vw, 2rem) 0; }
+    .admin-wrapper { background: transparent; border-radius: 0; }
+    .admin-card, .form-card { border: 1px solid #e5eaf2 !important; border-radius: 16px !important; background: rgba(255,255,255,.96); box-shadow: 0 14px 36px rgba(15,23,42,.07); overflow: hidden; }
+    .admin-card .card-header, .form-card .card-header { color: #fff; padding: clamp(1.2rem, 3vw, 1.8rem); border: 0; background: linear-gradient(115deg, #19152E 0%, #5541A8 68%, #7664c5 130%); }
+    .admin-card .card-header h2, .form-card .card-header h3 { color: #fff; font-weight: 800; letter-spacing: -.03em; }
+    .admin-card .card-body, .form-card .card-body { padding: clamp(1rem, 3vw, 1.5rem); }
+    .total-badge { display:inline-flex; align-items:center; gap:.35rem; padding:.4rem .75rem; border:1px solid rgba(255,255,255,.25); border-radius:999px; background:rgba(255,255,255,.12); color:#fff; font-weight:700; }
+    .stats-row { gap:.75rem; margin-bottom:1.25rem; padding:1rem; border:1px solid #e5eaf2; border-radius:14px; background:#f7f8fc; }
+    .stats-row .stat-item { gap:.5rem; padding:.55rem .85rem; border:1px solid #edf1f6; border-radius:12px; background:#fff; box-shadow:0 4px 12px rgba(15,23,42,.04); }
+    .stats-row .stat-item i, .stats-row .stat-item .stat-num { color:#5541A8; }
+    .filter-bar { gap:.75rem; margin-bottom:1rem; }
+    .filter-bar .search-box, .filter-bar .filter-select { min-height:44px; padding:.55rem .9rem; border:1px solid #dce4ef; border-radius:10px; background:#fbfcfe; }
+    .filter-bar .search-box:focus, .filter-bar .filter-select:focus { border-color:#B7A5FF; box-shadow:0 0 0 .2rem rgba(85,65,168,.12); outline:0; }
+    .table-responsive { border:1px solid #e5eaf2; border-radius:14px; }
+    .table { margin-bottom:0; --bs-table-hover-bg:#f5f7fc; }
+    .table thead th { padding:.85rem .9rem; color:#68778c; font-size:.7rem; letter-spacing:.07em; text-transform:uppercase; white-space:nowrap; }
+    .table tbody td { padding:.9rem; border-color:#edf1f6; }
+    .form-wrapper { min-height:0; display:flex; justify-content:center; }
+    .form-card { width:100%; }
+    .form-card .card-header { text-align:left; }
+    .form-card .card-header i { font-size:1.5rem; }
+    .form-floating { margin-bottom:1rem; }
+    .form-floating > .form-control, .form-floating > .form-select, .form-floating > textarea { border:1px solid #dce4ef; border-radius:10px; background:#fbfcfe; }
+    .form-floating > .form-control:focus, .form-floating > .form-select:focus, .form-floating > textarea:focus { border-color:#B7A5FF; box-shadow:0 0 0 .2rem rgba(85,65,168,.12); background:#fff; }
+    .btn-save, .btn-send { padding:.75rem 1.2rem; color:#fff; border:0; border-radius:999px; background:linear-gradient(115deg,#19152E,#5541A8); font-weight:750; }
+    .btn-save:hover, .btn-send:hover { color:#fff; background:linear-gradient(115deg,#5541A8,#7664c5); transform:translateY(-1px); }
+    .feedback-item { border-color:#edf1f6; }
+    .feedback-comment { color:#334155; }
+    .empty-state { color:#68778c; }
+    .channel-options .channel-btn { border-color:#dce4ef; border-radius:10px; }
+    .channel-options .channel-btn.active-email, .channel-options .channel-btn.active-sms, .channel-options .channel-btn.active-push { border-color:#5541A8; background:#f0edfb; color:#5541A8; }
+    @media (max-width:576px) { .admin-card .card-body,.form-card .card-body { padding:1rem; } .stats-row { display:grid; grid-template-columns:1fr; } .filter-bar { flex-direction:column; } .filter-bar .search-box,.filter-bar .filter-select { width:100%; } .table { font-size:.85rem; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-wrapper">
+    <div class="col-md-8 col-lg-6 col-xl-5">
+        <div class="card form-card">
+            <div class="card-header">
+                <i class="bi bi-send-plus"></i>
+                <h3>Send Notification</h3>
+                <p class="mb-0" style="opacity:0.85;">Compose and send a message to your audience</p>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin_notification_send') }}">
+                    <!-- Recipient -->
+                    <div class="form-floating">
+                        <input type="email" class="form-control" id="recipient" name="recipient"
+                               placeholder="recipient@example.com" required>
+                        <label for="recipient"><i class="bi bi-person me-2"></i>Recipient Email</label>
+                    </div>
+
+                    <!-- Channel (radio buttons styled as pills) -->
+                    <label class="form-label fw-semibold"><i class="bi bi-megaphone me-2"></i>Channel</label>
+                    <div class="channel-options" id="channelGroup">
+                        <label class="channel-btn active-email">
+                            <input type="radio" name="channel" value="email" checked>
+                            <i class="bi bi-envelope"></i> Email
+                        </label>
+                        <label class="channel-btn">
+                            <input type="radio" name="channel" value="sms">
+                            <i class="bi bi-chat-dots"></i> SMS
+                        </label>
+                        <label class="channel-btn">
+                            <input type="radio" name="channel" value="push">
+                            <i class="bi bi-bell"></i> Push
+                        </label>
+                    </div>
+
+                    <!-- Subject -->
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="subject" name="subject"
+                               placeholder="Notification subject" required>
+                        <label for="subject"><i class="bi bi-file-text me-2"></i>Subject</label>
+                    </div>
+
+                    <!-- Message -->
+                    <div class="form-floating">
+                        <textarea class="form-control" id="message" name="message"
+                                  placeholder="Your message here..." style="min-height: 120px;" required></textarea>
+                        <label for="message"><i class="bi bi-chat-text me-2"></i>Message</label>
+                    </div>
+
+                    <!-- Buttons -->
+                    <button type="submit" class="btn btn-send">
+                        <i class="bi bi-send me-2"></i> Send Notification
+                    </button>
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('admin_notifications') }}" class="text-decoration-none text-muted">
+                            <i class="bi bi-arrow-left"></i> Cancel and go back
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const channelBtns = document.querySelectorAll('.channel-btn');
+        channelBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove all active classes
+                channelBtns.forEach(b => {
+                    b.classList.remove('active-email', 'active-sms', 'active-push');
+                });
+                // Add active class based on value
+                const radio = this.querySelector('input[type="radio"]');
+                if (radio) {
+                    radio.checked = true;
+                    const val = radio.value;
+                    if (val === 'email') this.classList.add('active-email');
+                    else if (val === 'sms') this.classList.add('active-sms');
+                    else if (val === 'push') this.classList.add('active-push');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

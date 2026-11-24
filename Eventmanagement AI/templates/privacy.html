@@ -36,7 +36,7 @@
                 <li><strong>Account information:</strong> name, email address, and a password hash created when an account is registered. The application checks the hash during login; it does not store the password as plain text.</li>
                 <li><strong>Event activity:</strong> event registrations, ticket type, check-in status, reminders, and feedback (rating and any comment), associated with your account where applicable.</li>
                 <li><strong>Assistant messages:</strong> text you submit to the AI assistant may be sent to Google Gemini to generate a response. Do not include sensitive personal information in assistant prompts.</li>
-                <li><strong>Contact form:</strong> the form asks for your name, email, subject, and message. In the current code, the submission is not saved or emailed; the app displays a confirmation and discards the submitted values after the request.</li>
+                <li><strong>Contact form:</strong> the form asks for your name, email, subject, and message. Submissions are saved in the application database and visible to administrators in Admin → Contact Messages; replies must currently be sent manually using the submitter's email address.</li>
             </ul>
             <p>The application also creates timestamps for certain account, event, reminder, notification, and feedback records. Administrators may enter event and operations information into the system.</p>
         </section>

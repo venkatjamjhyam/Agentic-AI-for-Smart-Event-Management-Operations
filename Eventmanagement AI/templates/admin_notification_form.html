@@ -186,22 +186,8 @@
                         <label for="recipient"><i class="bi bi-person me-2"></i>Recipient Email</label>
                     </div>
 
-                    <!-- Channel (radio buttons styled as pills) -->
-                    <label class="form-label fw-semibold"><i class="bi bi-megaphone me-2"></i>Channel</label>
-                    <div class="channel-options" id="channelGroup">
-                        <label class="channel-btn active-email">
-                            <input type="radio" name="channel" value="email" checked>
-                            <i class="bi bi-envelope"></i> Email
-                        </label>
-                        <label class="channel-btn">
-                            <input type="radio" name="channel" value="sms">
-                            <i class="bi bi-chat-dots"></i> SMS
-                        </label>
-                        <label class="channel-btn">
-                            <input type="radio" name="channel" value="push">
-                            <i class="bi bi-bell"></i> Push
-                        </label>
-                    </div>
+                    <input type="hidden" name="channel" value="in_app">
+                    <div class="alert alert-info py-2"><i class="bi bi-bell me-2"></i>This delivers an in-app notification to the matching registered account.</div>
 
                     <!-- Subject -->
                     <div class="form-floating">

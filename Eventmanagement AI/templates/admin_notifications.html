@@ -260,7 +260,7 @@
                                 <td>
                                     <span class="badge-status bg-{{ 'primary' if notif.channel == 'email' else 'success' if notif.channel == 'sms' else 'warning' }}">
                                         <i class="bi bi-{{ 'envelope' if notif.channel == 'email' else 'chat' if notif.channel == 'sms' else 'bell' }}"></i>
-                                        {{ notif.channel|title }}
+                                        {{ 'In-app' if notif.channel == 'in_app' else notif.channel|title }}
                                     </span>
                                 </td>
                                 <td><span class="subject-preview" title="{{ notif.subject }}">{{ notif.subject }}</span></td>

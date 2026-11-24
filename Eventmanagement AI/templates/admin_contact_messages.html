@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Contact Messages | EventOps AI{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-inbox me-2"></i>Contact Messages</h1>
+        <span class="badge text-bg-primary">{{ messages|length }} total</span>
+    </div>
+    {% for item in messages %}
+    <article class="card mb-3 shadow-sm">
+        <div class="card-body">
+            <div class="d-flex justify-content-between gap-3">
+                <div>
+                    <h5>{{ item.subject }} {% if not item.read %}<span class="badge text-bg-warning">New</span>{% endif %}</h5>
+                    <p class="mb-1"><strong>{{ item.name }}</strong> · <a href="mailto:{{ item.email }}">{{ item.email }}</a></p>
+                    <small class="text-muted">{{ item.submitted_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                </div>
+                {% if not item.read %}
+                <form method="post" action="{{ url_for('mark_contact_message_read', message_id=item.id) }}">
+                    <button class="btn btn-outline-primary btn-sm" type="submit">Mark read</button>
+                </form>
+                {% endif %}
+            </div>
+            <hr><p class="mb-0" style="white-space: pre-wrap">{{ item.message }}</p>
+        </div>
+    </article>
+    {% else %}
+    <div class="alert alert-light border">No contact messages have been submitted.</div>
+    {% endfor %}
+</div>
+{% endblock %}

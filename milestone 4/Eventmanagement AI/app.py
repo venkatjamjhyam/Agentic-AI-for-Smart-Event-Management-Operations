@@ -115,6 +115,23 @@ class Notification(db.Model):
 
     user = db.relationship('User', backref='notifications')
 
+class ContactMessage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    subject = db.Column(db.String(200), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    submitted_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    read = db.Column(db.Boolean, default=False)
+
+@app.context_processor
+def inject_unread_notification_count():
+    if current_user.is_authenticated:
+        count = Notification.query.filter_by(user_id=current_user.id, read=False).count()
+    else:
+        count = 0
+    return {'unread_notification_count': count}
+
 class Reminder(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -1112,21 +1129,57 @@ def admin_notifications():
     notifications = Notification.query.order_by(Notification.sent_at.desc()).all()
     return render_template('admin_notifications.html', notifications=notifications)
 
+@app.route('/notifications')
+@login_required
+def user_notifications():
+    notifications = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.sent_at.desc()).all()
+    return render_template('user_notifications.html', notifications=notifications)
+
+@app.route('/notifications/<int:notification_id>/read', methods=['POST'])
+@login_required
+def mark_notification_read(notification_id):
+    notification = Notification.query.filter_by(id=notification_id, user_id=current_user.id).first_or_404()
+    notification.read = True
+    db.session.commit()
+    return redirect(url_for('user_notifications'))
+
+@app.route('/admin/contact-messages')
+@login_required
+def admin_contact_messages():
+    if current_user.role != 'admin':
+        abort(403)
+    messages = ContactMessage.query.order_by(ContactMessage.submitted_at.desc()).all()
+    return render_template('admin_contact_messages.html', messages=messages)
+
+@app.route('/admin/contact-messages/<int:message_id>/read', methods=['POST'])
+@login_required
+def mark_contact_message_read(message_id):
+    if current_user.role != 'admin':
+        abort(403)
+    contact_message = ContactMessage.query.get_or_404(message_id)
+    contact_message.read = True
+    db.session.commit()
+    return redirect(url_for('admin_contact_messages'))
+
 @app.route('/admin/notifications/send', methods=['GET', 'POST'])
 @login_required
 def admin_notification_send():
     if current_user.role != 'admin':
         abort(403)
     if request.method == 'POST':
-        recipient = request.form.get('recipient')
-        channel = request.form.get('channel')
-        subject = request.form.get('subject')
-        message = request.form.get('message')
+        recipient = request.form.get('recipient', '').strip()
+        channel = request.form.get('channel', 'in_app').strip().lower()
+        subject = request.form.get('subject', '').strip()
+        message = request.form.get('message', '').strip()
         if recipient and subject and message:
-            notif = Notification(recipient=recipient, channel=channel, subject=subject, message=message)
+            user = User.query.filter(db.func.lower(User.email) == recipient.lower()).first()
+            if not user:
+                flash('No account was found for that email. The notification was not sent.', 'danger')
+                return render_template('admin_notification_form.html')
+            notif = Notification(user_id=user.id, recipient=user.email, channel='in_app', subject=subject, message=message)
             db.session.add(notif)
             db.session.commit()
-            flash('Notification sent', 'success')
+            flash(f'In-app notification sent to {user.email}.', 'success')
             return redirect(url_for('admin_notifications'))
     return render_template('admin_notification_form.html')
 
@@ -1184,13 +1237,16 @@ def feedback_list():
 @app.route('/contact', methods=['GET', 'POST'])
 def contact():
     if request.method == 'POST':
-        name = request.form.get('name')
-        email = request.form.get('email')
-        subject = request.form.get('subject', 'No subject')
-        message = request.form.get('message')
-        # Here you can send an email, save to database, or show a success message
-        # For now, just flash a success message
-        flash(f'Thank you {name}! Your message has been sent.', 'success')
+        name = request.form.get('name', '').strip()
+        email = request.form.get('email', '').strip()
+        subject = request.form.get('subject', '').strip() or 'No subject'
+        message = request.form.get('message', '').strip()
+        if not name or not email or not message:
+            flash('Please complete your name, email, and message.', 'danger')
+            return redirect(url_for('contact'))
+        db.session.add(ContactMessage(name=name, email=email, subject=subject, message=message))
+        db.session.commit()
+        flash(f'Thank you {name}! Your message was sent to the EventOps admin inbox.', 'success')
         return redirect(url_for('contact'))
     return render_template('contact.html')
 

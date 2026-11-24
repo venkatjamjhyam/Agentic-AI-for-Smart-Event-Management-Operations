@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}My Notifications | EventOps AI{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-bell me-2"></i>My Notifications</h1>
+        <span class="badge text-bg-primary">{{ notifications|length }} total</span>
+    </div>
+    {% for notification in notifications %}
+    <article class="card mb-3 shadow-sm">
+        <div class="card-body d-flex justify-content-between gap-3">
+            <div>
+                <h5 class="card-title">{{ notification.subject }} {% if not notification.read %}<span class="badge text-bg-warning">New</span>{% endif %}</h5>
+                <p class="card-text">{{ notification.message }}</p>
+                <small class="text-muted">{{ notification.sent_at.strftime('%Y-%m-%d %H:%M') }} · In-app</small>
+            </div>
+            {% if not notification.read %}
+            <form method="post" action="{{ url_for('mark_notification_read', notification_id=notification.id) }}">
+                <button class="btn btn-outline-primary btn-sm" type="submit">Mark read</button>
+            </form>
+            {% endif %}
+        </div>
+    </article>
+    {% else %}
+    <div class="alert alert-light border">You don’t have any notifications yet.</div>
+    {% endfor %}
+</div>
+{% endblock %}
